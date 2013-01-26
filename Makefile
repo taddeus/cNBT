@@ -6,29 +6,29 @@
 # it, you can buy us a beer in return.
 # -----------------------------------------------------------------------------
 
-CFLAGS=-g -Wcpp -Wall -Wextra -std=c99 -pedantic -fPIC
+BIN := nbtreader
+LIB := libnbt.a
+CHECK := check
 
-all: nbtreader check
+CFLAGS := -g -Wcpp -Wall -Wextra -std=c99 -pedantic -fPIC
+LDFLAGS := -L. -lnbt -lz
+LINK = $(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
 
-nbtreader: main.o libnbt.a
-	$(CC) $(CFLAGS) main.o -L. -lnbt -lz -o nbtreader
+.PHONY: all test clean
 
-check: check.c libnbt.a
-	$(CC) $(CFLAGS) check.c -L. -lnbt -lz -o check
+all: $(LIB) $(BIN)
 
-regioninfo: regioninfo.c libnbt.a
-	$(CC) $(CFLAGS) regioninfo.c -L. -lnbt -lz -o regioninfo
+nbtreader: main.o
+	$(LINK)
 
-test: check
-	cd testdata && ls -1 *.nbt | xargs -n1 valgrind ../check && cd ..
+%: %.c
+	$(LINK)
 
-main.o: main.c
+$(LIB): buffer.o nbt_loading.o nbt_parsing.o nbt_treeops.o nbt_util.o
+	ar -rcs $@ $^
 
-libnbt.a: buffer.o nbt_loading.o nbt_parsing.o nbt_treeops.o nbt_util.o
-	ar -rcs libnbt.a buffer.o nbt_loading.o nbt_parsing.o nbt_treeops.o nbt_util.o
+test: $(CHECK)
+	cd testdata && ls -1 *.nbt | xargs -n1 valgrind ../$(CHECK) && cd ..
 
-buffer.o: buffer.c
-nbt_loading.o: nbt_loading.c
-nbt_parsing.o: nbt_parsing.c
-nbt_treeops.o: nbt_treeops.c
-nbt_util.o: nbt_util.c
+clean:
+	rm -f *.o $(BIN) $(LIB) $(CHECK)
