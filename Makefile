@@ -11,18 +11,15 @@ LIB := libnbt.a
 CHECK := check
 
 CFLAGS := -g -Wcpp -Wall -Wextra -std=c99 -pedantic -fPIC
-LDFLAGS := -L. -lnbt -lz
-LINK = $(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
+LDFLAGS := -L.
+LDLIBS := -lnbt -lz
 
 .PHONY: all test clean
 
 all: $(LIB) $(BIN)
 
 nbtreader: main.o
-	$(LINK)
-
 %: %.c
-	$(LINK)
 
 $(LIB): buffer.o nbt_loading.o nbt_parsing.o nbt_treeops.o nbt_util.o
 	ar -rcs $@ $^
